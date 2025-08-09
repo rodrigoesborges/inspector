@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+requests
+sentence-transformers
+redis>=4.5.0
+redis[search]
+python-dotenv
+streamlit
+pydantic
+typing-extensions
+tqdm
+openai
+numpy
+torch==2.3.0+cpu
+torchvision==0.18.0+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu

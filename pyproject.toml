@@ -2,7 +2,7 @@
 name = "inspector"
 version = "0.2.0"
 description = ""
-authors = ["André Rocha"]
+authors = ["Rodrigo Borges"]
 readme = "README.md"
 package-mode = false
 
