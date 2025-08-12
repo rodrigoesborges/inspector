@@ -4,9 +4,14 @@ requests
 sentence-transformers
 redis>=4.5.0
 redis[search]
+ipeadatapy
 python-dotenv
+ipeadatapy
 streamlit
+pandas
+altair
 pydantic
+tabulate
 typing-extensions
 tqdm
 openai

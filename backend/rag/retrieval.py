@@ -22,8 +22,8 @@ def index_ipea_series(sercodigo: str, series_values: List[Dict[str, Any]]):
     count = 0
     for i, row in enumerate(series_values):
         # typical row may have 'Data' and 'Valor'
-        date = row.get("Data") or row.get("DataReferencia") # FAISS or row.get("data")
-        val = row.get("Valor") # FAISS or row.get("valor") or row.get("ValorNumerico") or row.get("ValorTexto")
+        date = row.get("DATE") or row.get("RAW DATE") # FAISS or row.get("data")
+        val = row.get("VALUE") # FAISS or row.get("valor") or row.get("ValorNumerico") or row.get("ValorTexto")
         text = f"Série {sercodigo} — Data: {date} — Valor: {val}"
         #FAISS chunks.append(text)
         meta = {"sercodigo": sercodigo, "date": date or "", "value": str(val or "")} #FAISS metas.append(..., "text": text)
@@ -39,6 +39,7 @@ def index_ipea_series(sercodigo: str, series_values: List[Dict[str, Any]]):
     store.add(vecs, metas)
     return len(chunks)
 '''
+
 
 
 def retrieve_similar(query: str, k: int = 5): #FAISS -> List[Dict[str, Any]]:

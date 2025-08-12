@@ -11,7 +11,10 @@ COPY requirements.txt /app/requirements.txt
 
 # Use BuildKit cache for pip
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r /app/requirements.txt
+    pip install -r /app/requirements.txt 
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install ipeadatapy
+
 
 COPY . /app
 CMD ["uvicorn","main:app","--host","0.0.0.0","--port","8997","--reload"]

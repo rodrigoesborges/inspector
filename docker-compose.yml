@@ -24,6 +24,7 @@ services:
       - API_PORT=8997
       - SENTENCE_TRANSFORMER_MODEL=all-MiniLM-L6-v2
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TIKA_SERVER_ENDPOINT=http://tika:9998/
     ports:
       - "8997:8997"
     volumes:
@@ -63,7 +64,7 @@ services:
     ports:
       - "8995:9998"
     environment:
-      - TIKA_SERVER_ENDPOINT=http://localhost:9998/
+      - TIKA_SERVER_ENDPOINT=http://tika:9998/
     healthcheck:
       test: ["CMD-SHELL", "curl --fail http://localhost:9998/ || exit 1"]
 

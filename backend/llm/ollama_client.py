@@ -7,7 +7,7 @@ from openai import OpenAI
 OLLAMA_URL = os.environ.get("OLLAMA_URL")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
 
-def ollama_generate(prompt: str, model: str = "gpt-5-mini", stream: bool = False, max_tokens: int = 1024) -> Dict[str, Any]:
+def ollama_generate(prompt: str, model: str = "gpt-4o-mini", stream: bool = False, max_tokens: int = 1024) -> Dict[str, Any]:
     """
     Call local Ollama generate endpoint. Returns the generated text or raises.
     """
@@ -25,7 +25,7 @@ def ollama_generate(prompt: str, model: str = "gpt-5-mini", stream: bool = False
         return {"text": js["content"], "raw": js}
     return {"text": str(js), "raw": js}
 
-def openai_generate(prompt: str, model: str = "gpt-5-mini", max_tokens: int = 1024) -> Dict[str, Any]:
+def openai_generate(prompt: str, model: str = "gpt-4o-mini", max_tokens: int = 1024) -> Dict[str, Any]:
     if not OPENAI_API_KEY:
         raise RuntimeError("OPENAI_API_KEY not set")
     
@@ -40,7 +40,8 @@ def openai_generate(prompt: str, model: str = "gpt-5-mini", max_tokens: int = 10
         max_completion_tokens=max_tokens,
     )
     text = response.choices[0].message.content
-    return {"text": text, "raw": response}
+    #return {"text": text, "raw": response}
+    return text
 
 def generate_answer(prompt: str, preferred: str = "ollama", **kwargs) -> Dict[str, Any]:
     """
