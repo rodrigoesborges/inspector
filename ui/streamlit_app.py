@@ -173,21 +173,24 @@ if st.session_state.final_answer:
     if answer.get("chart_data"):
         st.subheader("Visualização dos Dados")
         df_chart = pd.DataFrame(answer["chart_data"])
-        df_chart['date'] = pd.to_datetime(df_chart['date'])
         
-        chart = alt.Chart(df_chart).mark_line().encode(
-            x=alt.X('date:T', title='Data'),
-            y=alt.Y('value:Q', title='Valor'),
-            tooltip=['date:T', 'value:Q']
-        ).interactive()
-        
-        st.altair_chart(chart, use_container_width=True)
+        # Adiciona uma verificação extra para o caso de o dataframe estar vazio após a conversão
+        if not df_chart.empty:
+            df_chart['date'] = pd.to_datetime(df_chart['date'])
+            chart = alt.Chart(df_chart).mark_line().encode(
+                x=alt.X('date:T', title='Data'),
+                y=alt.Y('value:Q', title='Valor'),
+                tooltip=['date:T', 'value:Q']
+            ).interactive()
+            st.altair_chart(chart, use_container_width=True)
+        else:
+            # Esta mensagem aparecerá se a lista de chart_data estiver vazia
+            st.warning("Não há dados disponíveis para plotar o gráfico no período selecionado.")
+    else:
+        # Esta mensagem aparecerá se a chave 'chart_data' estiver totalmente ausente
+        st.info("Nenhum dado para o gráfico foi retornado pela API.")
 
-    with st.expander("Ver contexto enviado ao modelo"):
-        st.text(answer.get("context_used", "Nenhum contexto foi gerado."))
-
-
-    # --- CORREÇÃO AQUI: Adiciona um expander para o contexto ---
+    
     st.subheader("Saiba mais")
     with st.expander("Inspecionar o contexto enviado ao modelo de linguagem (LLM)"):
         # O st.text é ideal para exibir blocos de texto pré-formatados

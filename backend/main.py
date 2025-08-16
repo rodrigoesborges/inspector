@@ -1,8 +1,9 @@
 # backend/main.py
 from fastapi import FastAPI, HTTPException, Form, File, UploadFile
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,Tuple
 import ipeadatapy as ip
+import numpy as np
 import pandas as pd
 import requests
 import re
@@ -48,6 +49,43 @@ class QueryRequest(BaseModel):
     sercodigo: str   # optional direct series code
     use_model: Optional[str] = "openai"  # or 'openai'
     model_name: Optional[str] = "gpt-4o-mini" #llama3.2
+
+
+# --- NOVA FUNÇÃO APERFEIÇOADA PARA EXTRAIR DATAS ---
+def extract_year_range(text: str) -> Tuple[Optional[int], Optional[int]]:
+    """
+    Extrai um intervalo de anos de um texto de forma robusta.
+    Retorna (start_year, end_year).
+    """
+    text = text.lower()
+    start_year, end_year = None, None
+
+    # Padrão 1: Tenta encontrar "de [ano] a [ano]" ou "entre [ano] e [ano]"
+    patterns = [
+        r"de\s+(\d{4})\s+a\s+(\d{4})",
+        r"entre\s+(\d{4})\s+e\s+(\d{4})"
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            # Garante que o ano inicial é o menor
+            year1 = int(match.group(1))
+            year2 = int(match.group(2))
+            return min(year1, year2), max(year1, year2)
+
+    # Padrão 2 (Fallback): Encontra todos os anos de 4 dígitos
+    anos = re.findall(r'\b(19|20)\d{2}\b', text)
+    anos = sorted([int(ano) for ano in anos])
+
+    if len(anos) >= 2:
+        # Usa o menor e o maior ano encontrado
+        start_year, end_year = anos[0], anos[-1]
+    elif len(anos) == 1:
+        # Se apenas um ano for encontrado, o intervalo é esse próprio ano
+        start_year, end_year = anos[0], anos[0]
+
+    return start_year, end_year
+
 
 # --- NOVA FUNÇÃO HELPER: Para extrair texto com Tika ---
 def extract_text_from_file(file: UploadFile) -> str:
@@ -137,14 +175,13 @@ def query(
         meta = ip.metadata(sercodigo)
         nome_serie = meta['NAME'].iloc[0] if not meta.empty else sercodigo
 
-        # 2. Extrair o período de tempo da pergunta (lógica simples)
-        anos = re.findall(r'\b(19|20)\d{2}\b', question)
-        anos = sorted([int(ano) for ano in anos])
         
         print("\n--- INICIANDO ETAPA DE FILTRAGEM DE DATAS ---")
 
-        if len(anos) >= 2:
-            start_year, end_year = anos[0], anos[-1]
+	 # --- USA A NOVA FUNÇÃO DE EXTRAÇÃO DE DATAS ---
+        start_year, end_year = extract_year_range(question)
+
+        if start_year:
             print(f"Período de datas encontrado na pergunta: {start_year} a {end_year}")
             
             # Log do intervalo de datas do DataFrame ANTES do filtro
@@ -186,8 +223,9 @@ def query(
         #llm_answer = f"Resposta simulada do LLM para a pergunta '{question}' sobre a série '{nome_serie}' com base nos dados fornecidos." # Placeholder
 
         # 5. Preparar dados para o gráfico
-        df_chart_data = df_filtered.iloc[:, [-1]]
+        df_chart_data = df.iloc[:, [-1]]
         df_chart_data = df_chart_data.reset_index()
+        df_chart_data.replace([np.inf, -np.inf, np.nan], None, inplace=True)
         df_chart_data.columns = ['date', 'value']
         chart_data = df_chart_data.to_dict(orient='records')
         
@@ -257,8 +295,8 @@ def get_indexed_series():
         filtered_df = metadata_df[metadata_df['CODE'].isin(indexed_codes)]
 
         # 3. Formata os dados para a resposta JSON
-        result_df = filtered_df[['CODE', 'NAME']].copy()
-        result_df.rename(columns={'CODE': 'sercodigo', 'NAME': 'nome'}, inplace=True)
+        result_df = filtered_df[['NAME','CODE']].copy()
+        result_df.rename(columns={'NAME': 'nome', 'CODE': 'código'}, inplace=True)
         
         series_list = result_df.to_dict(orient='records')
 

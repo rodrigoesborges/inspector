@@ -39,7 +39,7 @@ class RedisVectorStore:
                 # Se o Redis estiver ocupado, espera 1 segundo e tenta novamente.
                 retries += 1
                 print(f"⏳ Redis está carregando... aguardando 1s. (Tentativa {retries}/{max_retries})")
-                time.sleep(1)
+                time.sleep(10)
             except Exception as e:
                 # Se outro erro ocorrer, falha imediatamente.
                 print(f"❌ Erro inesperado ao conectar com o Redis: {e}")

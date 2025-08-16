@@ -8,8 +8,7 @@ def index_all_series():
     print("Obtendo lista de todas as séries do IPEA...")
     meta_df = ip.metadata()  # DataFrame com CODE, NAME, UNIT, COMMENT, etc.
     all_codes = meta_df["CODE"].dropna().unique().tolist()
-    all_codes = all_codes[199:]
-    
+    all_codes = all_codes[1312:]
     print(f"✅ {len(all_codes)} códigos encontrados.")
 
     total_series = 0
